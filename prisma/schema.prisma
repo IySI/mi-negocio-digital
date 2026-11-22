@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model NegocioConfig {
+  id                   String   @id @default(cuid())
+  nombreNegocio        String   @default("Mi Negocio")
+  telefono             String?  @default("")
+  direccion            String?  @default("")
+  moneda               String   @default("$")
+  duracionTurnoMinutos Int      @default(30)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model HorarioAtencion {
+  id             String   @id @default(cuid())
+  diaSemana      Int      @unique // 0=Domingo, 1=Lunes, 2=Martes, 3=Miércoles, 4=Jueves, 5=Viernes, 6=Sábado
+  activo         Boolean  @default(true)
+  horaApertura   String   @default("09:00") // HH:mm
+  horaCierre     String   @default("18:00") // HH:mm
+  inicioAlmuerzo String?  @default("13:00") // HH:mm
+  finAlmuerzo    String?  @default("14:00") // HH:mm
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Cliente {
+  id        String   @id @default(cuid())
+  nombre    String
+  telefono  String
+  email     String?
+  notas     String?
+  citas     Cita[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Servicio {
+  id              String   @id @default(cuid())
+  nombre          String
+  descripcion     String?
+  duracionMinutos Int
+  precio          Float
+  activo          Boolean  @default(true)
+  citas           Cita[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Cita {
+  id              String   @id @default(cuid())
+  clienteId       String
+  cliente         Cliente  @relation(fields: [clienteId], references: [id])
+  servicioId      String
+  servicio        Servicio @relation(fields: [servicioId], references: [id])
+  fechaHoraInicio DateTime
+  fechaHoraFin    DateTime
+  estado          String   @default("CONFIRMADA") // PENDIENTE, CONFIRMADA, COMPLETADA, CANCELADA
+  precioFinal     Float
+  notasInternas   String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
